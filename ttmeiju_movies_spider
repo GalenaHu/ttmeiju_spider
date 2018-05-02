@@ -1,7 +1,9 @@
 # coding=utf-8
 
-import re, os, urllib.request, time, xlwt
-from multiprocessing import Pool
+import re, urllib.request, time
+#xlwt
+#from multiprocessing import Pool
+#maybe next time
 
 ttmeiju_url = 'http://www.ttmeiju.vip/index.php/meiju/index/engename/Movie/p/'
 
