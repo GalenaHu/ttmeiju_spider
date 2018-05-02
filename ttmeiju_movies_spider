@@ -1,0 +1,76 @@
+# coding=utf-8
+
+import re, os, urllib.request, time, xlwt
+from multiprocessing import Pool
+
+ttmeiju_url = 'http://www.ttmeiju.vip/index.php/meiju/index/engename/Movie/p/'
+
+def spider(page_url):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}
+    req = urllib.request.Request(url=page_url, headers=headers)
+    context = str(urllib.request.urlopen(req).read().decode('UTF-8'))
+    context = context.replace('\n', '')
+    context = context.replace(' ', '')
+    context = context.replace('"', '\'')
+    #print(context)
+    return context
+
+def parse_context(c):
+    blocks = re.findall(r'Scontent(.+?)</tr>', c)
+    blocks = blocks[:-1]
+    #print(blocks)
+    all_movie = []
+    for block in blocks:
+        name = re.search(r'html(.+?)</a>', block).group(0)[6:-4]
+        if name[0] == '<':
+            name = name[len('''<fontstyle='color:red;font-weight:bold;'>'''):]
+            name = name[:-len('''</font>''')]
+        #print(name)
+        try:
+            baidu = re.search(r'href=\'https://pan(.+?)\'', block).group(0)[6:-1]
+            #print(baidu)
+        except:
+            baidu = 'None'
+        try:
+            baidu_password = re.search(r'</td><td>(.+?)</td><td>', block).group(0)
+            if len(baidu_password) > len('''</td><td>word</td><td>'''):
+               baidu_password = 'No Password'
+            else:
+                baidu_password = baidu_password[len('''</td><td>'''):len('''</td><td>''')+4]
+        except:
+            baidu_password = 'None'
+        try:
+            magnet = re.search(r'href=\'magnet:\?(.+?)\'', block).group(0)[6:-1]
+        except:
+            magnet = 'None'
+        d = {}
+        d['name'] = name
+        d['baidu'] = baidu
+        d['baidu_password'] = baidu_password
+        d['magnet'] = magnet
+        all_movie.append(d)
+    return all_movie
+
+#ttmeiju = ttmeiju_url + str(1)
+#parse_context(spider(ttmeiju))
+
+#'''
+if __name__ == '__main__':
+    t = time.time()
+    print('start...')
+    movie = []
+    f = open('D:/repository/ttmeiju_spider/data.txt', 'w')
+    for page in range(1, 200):
+        time.sleep(1)
+        print('page:', page)
+        all_page = ttmeiju_url + str(page)
+        c = spider(all_page)
+        d = parse_context(c)
+        #print(d)
+        for item in d:
+            f.write(str(item)+'\n')
+        #movie.append(d)
+    #print(movie)
+    f.close()
+    print(time.time()-t)
+#'''
